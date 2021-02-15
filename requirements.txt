@@ -6,7 +6,7 @@ idna==2.10                 # via requests
 importlib-metadata==2.0.0  # via pluggy, pytest
 more-itertools==8.5.0     # via pytest
 packaging==20.4           # via pytest
-pillow==7.2.0
+pillow~=7.0.0
 pluggy==0.13.1            # via pytest
 py==1.9.0                 # via pytest
 pyparsing==2.4.7          # via packaging
@@ -20,8 +20,27 @@ sqlparse==0.4.1           # via django
 urllib3==1.25.10           # via requests
 wcwidth==0.2.5            # via pytest
 zipp==3.3.0               # via importlib-metadata
-django-debug-toolbar
-djangorestframework
-markdown
-django-filter
+django-debug-toolbar~=3.2
+markdown~=3.3.3
+django-filter~=2.4.0
+asgiref==3.2.10
+djangorestframework==3.11.0
+djangorestframework-simplejwt==4.3.0
+gunicorn==20.0.4
+psycopg2-binary
+PyJWT==1.7.1
+django-environ
 
+
+colorama~=0.4.4
+cryptography~=3.1.1
+cffi~=1.14.3
+future~=0.18.2
+pip~=19.2.3
+toml~=0.10.1
+Jinja2~=2.11.2
+iniconfig~=1.0.1
+atomicwrites~=1.4.0
+tornado~=6.0.4
+setuptools~=41.2.0
+python-dotenv~=0.15.0
