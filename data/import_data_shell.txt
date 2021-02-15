@@ -1,0 +1,23 @@
+import csv
+import os
+
+os.chdir("C:\\Dev\\api_yamdb\\data")
+from api.models import Category, Genre, Title
+
+with open('category.csv', encoding='utf-8') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+            p = Category(id=row['id'], name=row['name'], slug=row['slug'])
+            p.save()
+
+with open('genre.csv', encoding='utf-8') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+            p = Genre(id=row['id'], name=row['name'], slug=row['slug'])
+            p.save()
+
+with open('titles.csv', encoding='utf-8') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+            p = Title(id=row['id'], name=row['name'], year=row['year'], category=Category.objects.get(id=row['category']))
+            p.save()
