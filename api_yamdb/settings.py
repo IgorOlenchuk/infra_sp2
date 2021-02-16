@@ -1,6 +1,5 @@
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'app_yamdb.settings'
-
 from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
