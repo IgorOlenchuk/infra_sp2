@@ -1,86 +1,248 @@
-# Project Title
-api_yamdb
+**REST API для сервиса YaMDb**
 
-## Getting Started
+## Index
+1. [Описание](#описание)
+2. [Алгоритм регистрации пользователей](#алгоритм-регистрации-пользователей)
+3. [Пользовательские роли](#пользовательские-роли)
+4. [Доступные методы](#доступные-методы)
+5. [Использование](использование)
+6. [Технологии](#технологии)
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+## Описание
 
-### Prerequisites
+**API для сервиса YaMDb. Позволяет работать со следующими сущностями:**
+ - **Отзывы**:
+   - получить список всех отзывов;
+   - создать новый отзыв; 
+   - получить отзыв по id;
+   - частично обновить отзыв по id;
+   - удалить отзыв по id.
+     
+ - **Комментарии к отзывам**:
+   - Получить список всех комментариев к отзыву по `id`;
+   - создать новый комментарий для отзыва, получить комментарий для отзыва по `id`;
+   - частично обновить комментарий к отзыву по `id`;
+   - удалить комментарий к отзыву по `id`.
+    
+ - **JWT-токен**:
+   - Отправление confirmation_code на переданный `email`;
+   - получение JWT-токена в обмен на `email` и `confirmation_code`.
+    
+ - **Пользователи**:
+   - получить список всех пользователей; 
+   - создание пользователя получить пользователя по `username`;
+   - изменить данные пользователя по `username`;
+   - удалить пользователя по `username`;
+   - получить данные своей учетной записи;
+   - изменить данные своей учетной записи.
+ 
+- **Категории (типы) произведений**:
+   - получить список всех категорий;
+   - создать категорию;
+   - удалить категорию.
+  
+- **Категории жанров**:
+   - получить список всех жанров
+   - создать жанр;
+   - удалить жанр.
+  
+- **Произведения, к которым пишут отзывы**: 
+    - получить список всех объектов;
+    - создать произведение для отзывов;
+    - информация об объекте;
+    - обновить информацию об объекте;
+    - удалить произведение. 
+    
+### Алгоритм регистрации пользователей
 
-What things you need to install the software and how to install them
+1. Пользователь отправляет запрос с параметром email на `/auth/email/`.
+2. YaMDB отправляет письмо с кодом подтверждения `(confirmation_code)` на адрес `email`.
+3. Пользователь отправляет запрос с параметрами `email` и `confirmation_code` на `/auth/token/`, 
+в ответе на запрос ему приходит `token` (JWT-токен).
+4. При желании пользователь отправляет PATCH-запрос на `/users/me/` и заполняет поля 
+в своём профайле (описание полей — в документации).
+   
+### Пользовательские роли
+
+- **Аноним** — может просматривать описания произведений, читать отзывы и комментарии.
+- **Аутентифицированный пользователь** — может, как и Аноним, читать всё, дополнительно он может 
+публиковать отзывы и ставить рейтинг произведениям (фильмам/книгам/песням), может комментировать 
+чужие отзывы и ставить им оценки; может редактировать и удалять свои отзывы и комментарии.
+- **Модератор** — те же права, что и у Аутентифицированного пользователя плюс право удалять любые отзывы и комментарии.
+- **Администратор** — полные права на управление проектом и всем его содержимым. 
+Может создавать и удалять категории и произведения. Может назначать роли пользователям.
+- **Администратор Django** — те же права, что и у роли Администратор.
+
+### Доступные методы:
 
 ```
-Give examples
+/api/v1/posts (GET, POST, PUT, PATCH, DELETE)
+```
+```
+/api/v1/posts/<id> (GET, POST, PUT, PATCH, DELETE)
+```
+```
+/api/v1/posts/<id>/comments (GET, POST, PUT, PATCH, DELETE)
+```
+```
+/api/v1/posts/<id>/comments/<id> (GET, POST, PUT, PATCH, DELETE)
+```
+```
+/api/v1/group/ (GET, POST)
+```
+```
+/api/v1/follow/ (GET, POST)
 ```
 
-### Installing
+## Использование
 
-A step by step series of examples that tell you have to get a development env running
+1) Создаем `.env` и заполняем переменные окружения:
 
-Say what the step will be
-
+```shell
+vim .env
 ```
-Give the example
-```
+```text
+SECRET_KEY=
+DEBUG=
+DJANGO_ALLOWED_HOSTS=
+DEFAULT_FROM_EMAIL=
 
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
+DB_ENGINE=
+DB_NAME=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+DB_HOST=
+DB_PORT=
 ```
 
-### And coding style tests
 
-Explain what these tests test and why
+2) Устанавливаем [Docker](https://docs.docker.com/engine/install/)
 
+3) Собираем `docker-compose` в detach mode (background):
+```shell
+docker-compose up -d --build
 ```
-Give an example
+
+4) Собираем статические файлы в `STATIC_ROOT`:
+```shell
+docker-compose exec web python3 manage.py collectstatic --noinput
+```
+<details>
+<summary>STDOUT</summary>
+
+```shell
+163 static files copied to '/usr/src/web/static'.
 ```
 
-## Deployment
+</details>
 
-Add additional notes about how to deploy this on a live system
+5) Запускаем миграции:
+```shell
+docker-compose exec web python3 manage.py migrate --noinput
+```
+<details>
+<summary>STDOUT</summary>
 
-## Built With
+```shell
+Operations to perform:
+  Apply all migrations: admin, auth, comments, content, contenttypes, sessions, users
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying users.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying content.0001_initial... OK
+  Applying content.0002_auto_20201119_1626... OK
+  Applying content.0003_auto_20201119_1629... OK
+  Applying content.0004_auto_20201119_1712... OK
+  Applying content.0005_auto_20201119_1719... OK
+  Applying content.0006_auto_20201119_1720... OK
+  Applying comments.0001_initial... OK
+  Applying comments.0002_reviews_title... OK
+  Applying comments.0003_auto_20201114_2342... OK
+  Applying comments.0004_auto_20201115_0124... OK
+  Applying comments.0005_auto_20201115_1214... OK
+  Applying content.0007_auto_20201119_1752... OK
+  Applying comments.0006_auto_20201121_1730... OK
+  Applying comments.0007_auto_20201121_1746... OK
+  Applying comments.0008_auto_20201121_2128... OK
+  Applying content.0008_auto_20201123_1330... OK
+  Applying content.0009_auto_20210207_1135... OK
+  Applying sessions.0001_initial... OK
+  Applying users.0002_auto_20210207_1843... OK
+  Applying users.0003_auto_20210207_1848... OK
+```
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+</details>
 
-## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+6) Наполняем `Postgres` данными:
+```shell
+docker-compose exec web python3 manage.py loaddata fixture.json
+```
+<details>
+<summary>STDOUT</summary>
 
-## Versioning
+```shell
+Installed 194 object(s) from 1 fixture(s)
+```
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+</details>
 
-## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+7) Создаем суперпользователя Django:
+```shell
+docker-compose run web python manage.py createsuperuser
+```
+<details>
+<summary>STDOUT</summary>
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+```shell
+Username:
+Email address:
+Password: 
+Password (again):
+Superuser created successfully.
+```
+</details>
 
-## License
+8) Останавливаем и удаляем контейнеры, сети, тома и образы:
+```shell
+docker-compose down -v
+```
+<details>
+<summary>STDOUT</summary>
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+```shell
+Stopping nginx           ... done
+Stopping infra_sp2_web_1 ... done
+Stopping infra_sp2_db_1  ... done
+Removing infra_sp2_web_run_2637ec89582d ... done
+Removing nginx                          ... done
+Removing infra_sp2_web_1                ... done
+Removing infra_sp2_db_1                 ... done
+Removing network infra_sp2_default
+Removing volume infra_sp2_postgres_data
+Removing volume infra_sp2_static_data
+Removing volume infra_sp2_media_data
+```
+</details>
 
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+## Технологии
+- [Python](https://www.python.org/)
+- [Django](https://www.djangoproject.com/)
+- [Django REST framework](https://www.django-rest-framework.org/)
+- [DRF Simple JWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/)
