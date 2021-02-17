@@ -7,12 +7,9 @@ ENV APP_HOME=/usr/src/web
 RUN apk update \
     && apk add postgresql-dev gcc python3-dev musl-dev
 
-COPY ./requirements.txt ./
-
+WORKDIR $APP_HOME
 RUN python3 -m pip install --upgrade pip \
     && pip3 install -r requirements.txt --no-cache-dir
-
-WORKDIR $APP_HOME
-COPY . $APP_HOME
+COPY .
 
 CMD gunicorn api_yamdb.wsgi:application --bind 0.0.0.0:8000
